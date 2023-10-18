@@ -9,7 +9,23 @@ package edu.uw.complexkotlin
 // the final string should look like FIZZBUZZFIZZFIZZBUZZFIZZFIZZBUZZ for 0..15.
 // store this lambda into 'fizzbuzz' so that the tests can call it
 //
-val fizzbuzz : (IntRange) -> String = { _ -> "" }
+val fizzbuzz : (IntRange) -> String = { numbersInRange: IntRange ->
+    val result = numbersInRange.map{ number ->
+        if (number % 3 == 0 && number % 5 == 0) {
+            "FIZZBUZZ"
+        } else if (number % 3 == 0) {
+            "FIZZ"
+        } else if (number % 5 == 0) {
+            "BUZZ"
+        } else {
+            ""
+        }
+    }
+    result.fold("") {accumulator, fizzBuzzString ->
+        accumulator + fizzBuzzString
+    }
+}
+
 
 // Example usage
 /*
@@ -35,17 +51,30 @@ fun process(message: String, block: (String) -> String): String {
 }
 // Create r1 as a lambda that calls process() with message "FOO" 
 // and a block that returns "BAR"
-val r1 = { "" }
+val r1 = { process("FOO",{ "BAR" }) }
+
 
 // Create r2 as a lambda that calls process() with message "FOO" 
 // and a block that upper-cases r2_message, and repeats it three 
 // times with no spaces: "WOOGAWOOGAWOOGA"
 val r2_message = "wooga"
-val r2 = { "" }
+val r2 = { process("FOO") { r2_message.toUpperCase().repeat(3) } }
 
 
 // write an enum-based state machine between talking and thinking
-enum class Philosopher { }
+enum class Philosopher {
+    THINKING {
+        override fun signal() = TALKING
+        override fun toString() = "Deep thoughts...."
+    },
+
+    TALKING {
+        override fun signal() = THINKING
+        override fun toString() = "Allow me to suggest an idea..."
+    };
+
+    abstract fun signal(): Philosopher
+}
 
 // create an class "Command" that can be used as a function 
 // (provide an "invoke()" function)
@@ -54,4 +83,8 @@ enum class Philosopher { }
 // when invoked, the Command object should return a String c
 // ontaining the prompt and then the message.
 // Example: Command(": ")("Hello!") should print ": Hello!"
-class Command(val prompt: String) { }
+class Command(val prompt: String) {
+    operator fun invoke(message: String): String {
+        return prompt + message
+    }
+}
